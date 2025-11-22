@@ -13,12 +13,13 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <link rel="icon" href="monk.png"> <!-- optional: add a small favicon -->
 
+
 </head>
 <body>
   <div class="container" style="display:flex;gap:28px;align-items:center;flex-wrap:wrap">
     <div style="flex:1;min-width:300px">
       <div style="display:flex;gap:18px;align-items:center">
-  <div class="avatar" id="album" aria-hidden="true" style="background-image:url('uci.jpg');">
+  <div class="avatar" id="album" aria-hidden="true" style="background-image:url('D:/spotify-gift/uci.jpg');">
     <div class="avatar-ring" aria-hidden="true"></div>
   </div>
   <div style="flex:1">
@@ -40,91 +41,218 @@
       <div style="padding:18px;border-radius:12px;background:var(--card)">
         <h4 style="margin:0">Playlist for Uci</h4>
         <div id="playlistCards" style="margin-top:12px"></div>
+<button id="playPreview" class="btn big" style="margin-top:12px;width:100%">
+  Play Preview ▶
+</button>
+
       </div>
     </div>
   </div>
 
   <script>
-    document.addEventListener('DOMContentLoaded', function(){
-      const album = document.getElementById('album');
-      const spectrum = document.getElementById('spectrum');
-      const openGift = document.getElementById('openGift');
-      const backToVibes = document.getElementById('backToVibes');
-      const playlistCards = document.getElementById('playlistCards');
-      const vibeText = document.getElementById('vibeText');
-      const miniConfetti = document.getElementById('miniConfetti');
+  document.addEventListener('DOMContentLoaded', function(){
+    const album = document.getElementById('album');
+    const spectrum = document.getElementById('spectrum');
+    const openGift = document.getElementById('openGift');
+    const backToVibes = document.getElementById('backToVibes');
+    const playlistCards = document.getElementById('playlistCards');
+    const vibeText = document.getElementById('vibeText');
+    const miniConfetti = document.getElementById('miniConfetti');
+    const playPreview = document.getElementById('playPreview');
 
-      // create spectrum bars
-      for(let i=0;i<14;i++){
-        const b = document.createElement('div');
-        b.style.height = (6 + Math.random()*80) + 'px';
-        b.style.width = (100/14) + '%';
-        b.style.flex = '1';
-        b.style.borderRadius = '6px';
-        b.style.background = 'linear-gradient(180deg,var(--yellow-1),#fff)';
-        spectrum.appendChild(b);
+    // create spectrum bars
+    for(let i = 0; i < 14; i++){
+      const b = document.createElement('div');
+      b.style.height = (6 + Math.random() * 80) + 'px';
+      b.style.width = (100 / 14) + '%';
+      b.style.flex = '1';
+      b.style.borderRadius = '6px';
+      b.style.background = 'linear-gradient(180deg,var(--yellow-1),#fff)';
+      spectrum.appendChild(b);
+    }
+
+    // spin album when ready
+    album.classList.add('spin');
+
+    // read selected genres from sessionStorage
+    const sel = JSON.parse(sessionStorage.getItem('sg_selected') || '[]');
+    vibeText.textContent = sel.length ? 'Vibe: ' + sel.join(', ') : 'Vibe: Surprise mix';
+
+    // Playlist display (just for text)
+    const samples = {
+      pop: [
+        ['Closer To You', 'Soft Pop'],
+        ['Golden Hour Drive', 'Warm Pop'],
+        ['Positions', 'Chill Pop']
+      ],
+      hiphop: [
+        ['Heartbeats & 808s', 'Lofi Hip-Hop'],
+        ['Sunflower', 'Soft Beat'],
+        ['Slow Motion City', 'Romantic Hip-Hop']
+      ],
+      rock: [
+        ['Holding On', 'Indie Rock'],
+        ['Call me by your name', 'Soft Rock'],
+        ['Skyline Hearts', 'Alt Rock']
+      ],
+      edm: [
+        ['Sunset Glow', 'Emotional EDM'],
+        ['Starlit Dancefloor', 'Progressive'],
+        ['Belly Dancer', 'Chill EDM']
+      ],
+      classical: [
+        ['Moonlit Notes', 'Piano'],
+        ['Stereo Hearts', 'Romantic Strings'],
+        ['Quiet Evening', 'Soft Orchestra']
+      ],
+      surprise(){
+        return [this.pop[0], this.edm[0], this.classical[0]];
       }
+    };
 
-      // spin album when ready
-      album.classList.add('spin');
-
-      // read selected genres from sessionStorage
-      const sel = JSON.parse(sessionStorage.getItem('sg_selected') || '[]');
-      vibeText.textContent = sel.length ? 'Vibe: ' + sel.join(', ') : 'Vibe: Surprise mix';
-
-      const samples = {
-        pop:[['Blinding Lights','The Weeknd'],['Levitating','Dua Lipa'],['As It Was','Harry Styles']],
-        hiphop:[['SICKO MODE','Travis Scott'],['Gods Plan','Drake'],['HUMBLE.','Kendrick Lamar']],
-        rock:[['Mr. Brightside','The Killers'],['Take Me Out','Franz Ferdinand'],['Creep','Radiohead']],
-        edm:[['Titanium','David Guetta'],['Wake Me Up','Avicii'],['Strobe','deadmau5']],
-        classical:[['Clair de Lune','Debussy'],['Nocturne op.9 No.2','Chopin'],['Spring (Four Seasons)','Vivaldi']],
-        surprise(){ return [this.pop[0], this.edm[0], this.rock[0]] }
-      };
-
-      function buildPlaylist(){
-        let pl = [];
-        if(!sel || sel.length===0) pl = pl.concat(samples.surprise());
-        else {
-          sel.forEach(g=>{
-            if(g==='surprise') pl = pl.concat(samples.surprise());
-            else if(samples[g]) pl = pl.concat(samples[g]);
-          });
-        }
-        pl = pl.slice(0,6);
-        playlistCards.innerHTML = '';
-        pl.forEach((t,i)=> {
-          const div = document.createElement('div');
-          div.className = 'card';
-          div.style.marginBottom = '8px';
-          div.innerHTML = '<strong>' + esc(t[0]) + '</strong><div class=\"muted\">' + esc(t[1]) + '</div>';
-          playlistCards.appendChild(div);
+    function buildPlaylist(){
+      let pl = [];
+      if(!sel || sel.length === 0){
+        pl = pl.concat(samples.surprise());
+      } else {
+        sel.forEach(g => {
+          if(g === 'surprise') pl = pl.concat(samples.surprise());
+          else if(samples[g]) pl = pl.concat(samples[g]);
         });
       }
-
-      // animate spectrum periodically
-      setInterval(()=> {
-        Array.from(spectrum.children).forEach(ch => {
-          ch.style.height = (6 + Math.random() * 90) + 'px';
-        });
-      }, 260);
-
-      buildPlaylist();
-
-      openGift.addEventListener('click', function(){
-        window.ConfettiSystem.start({count:260, duration:3600});
-        album.style.transform = 'scale(1.08)';
-        setTimeout(()=> album.style.transform = '', 700);
-        setTimeout(()=> window.goTo('reveal.html'), 1200);
+      pl = pl.slice(0, 6);
+      playlistCards.innerHTML = '';
+      pl.forEach((t, i) => {
+        const div = document.createElement('div');
+        div.className = 'card';
+        div.style.marginBottom = '8px';
+        div.innerHTML = '<strong>' + esc(t[0]) + '</strong><div class="muted">' + esc(t[1]) + '</div>';
+        playlistCards.appendChild(div);
       });
+    }
 
-      backToVibes.addEventListener('click', ()=> window.goTo('stage2.html'));
+    // spectrum fake animation (always dancing)
+    setInterval(() => {
+      Array.from(spectrum.children).forEach(ch => {
+        ch.style.height = (6 + Math.random() * 90) + 'px';
+      });
+    }, 260);
 
-      miniConfetti.addEventListener('click', ()=> window.ConfettiSystem.start({count:90,duration:1800}));
+    // AUDIO HANDLING
+    const audioMap = {
+      pop: 'assets/audio/vibe_pop.mp3',
+      hiphop: 'assets/audio/vibe_hiphop.mp3',
+      rock: 'assets/audio/vibe_rock.mp3',
+      edm: 'assets/audio/vibe_edm.mp3',
+      classical: 'assets/audio/vibe_classical.mp3',
+      surprise: 'assets/audio/vibe_surprise.mp3'
+    };
 
-      document.addEventListener('keydown', (e)=> { if(e.key === 'g') openGift.click(); });
+    function getPrimaryGenre(){
+      if(!sel || sel.length === 0) return 'surprise';
+      if(sel.includes('surprise')) return 'surprise';
+      return sel[0];
+    }
+
+    let audio = null;
+    let currentSrc = null;
+
+    function setupAudio(){
+      const genre = getPrimaryGenre();
+      const relSrc = audioMap[genre] || audioMap.surprise;
+      const absSrc = new URL(relSrc, window.location.href).href;
+
+      if(!audio){
+        audio = new Audio(absSrc);
+        currentSrc = absSrc;
+        audio.loop = true;
+        audio.volume = 0.8;
+
+        audio.addEventListener('play', () => {
+          album.classList.add('spin-strong');
+          playPreview.textContent = 'Pause Preview ⏸';
+        });
+
+        audio.addEventListener('pause', () => {
+          album.classList.remove('spin-strong');
+          playPreview.textContent = 'Play Preview ▶';
+        });
+
+        audio.addEventListener('ended', () => {
+          album.classList.remove('spin-strong');
+          playPreview.textContent = 'Play Preview ▶';
+        });
+
+        audio.addEventListener('error', () => {
+          console.error('Audio error', audio.error);
+          alert('Could not load audio file: ' + relSrc);
+        });
+      } else if(currentSrc !== absSrc){
+        audio.pause();
+        audio = new Audio(absSrc);
+        currentSrc = absSrc;
+        audio.loop = true;
+        audio.volume = 0.8;
+      }
+
+      return audio;
+    }
+
+    if(playPreview){
+      playPreview.addEventListener('click', () => {
+        const a = setupAudio();
+        if(a.paused){
+          a.play().catch(err => {
+            console.error('Play error', err);
+            alert('Browser blocked playback: ' + err.message);
+          });
+        } else {
+          a.pause();
+        }
+      });
+    }
+
+    // 👉 SAVE AUDIO STATE THEN GO TO REVEAL
+    function saveAudioState(){
+      if(audio){
+        sessionStorage.setItem('sg_audio_src', currentSrc || audio.currentSrc || '');
+        sessionStorage.setItem('sg_audio_time', String(audio.currentTime || 0));
+        sessionStorage.setItem('sg_audio_was_playing', String(!audio.paused));
+        audio.pause(); // stop here, continue on reveal
+      } else {
+        sessionStorage.removeItem('sg_audio_src');
+        sessionStorage.removeItem('sg_audio_time');
+        sessionStorage.removeItem('sg_audio_was_playing');
+      }
+    }
+
+    buildPlaylist();
+
+    openGift.addEventListener('click', function(){
+      saveAudioState();
+      window.ConfettiSystem.start({count:260, duration:3600});
+      album.style.transform = 'scale(1.08)';
+      setTimeout(()=> album.style.transform = '', 700);
+      setTimeout(()=> window.goTo('reveal.html'), 1200);
     });
-  </script>
+
+    backToVibes.addEventListener('click', ()=> {
+      if(audio) audio.pause();
+      sessionStorage.removeItem('sg_audio_src');
+      sessionStorage.removeItem('sg_audio_time');
+      sessionStorage.removeItem('sg_audio_was_playing');
+      window.goTo('stage2.html');
+    });
+
+    miniConfetti.addEventListener('click', ()=> window.ConfettiSystem.start({count:90, duration:1800}));
+
+    document.addEventListener('keydown', (e)=> {
+      if(e.key === 'g') openGift.click();
+    });
+  });
+</script>
+
+
+
 </body>
 </html>
-
-
