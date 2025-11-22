@@ -156,9 +156,13 @@
 
     let audio = null;
     let currentSrc = null;
+    let currentGenre = null; // 👈 track which genre is playing
 
     function setupAudio(){
       const genre = getPrimaryGenre();
+      currentGenre = genre; // 👈 remember this
+      sessionStorage.setItem('sg_audio_genre', genre); // 👈 save to use on reveal
+
       const relSrc = audioMap[genre] || audioMap.surprise;
       const absSrc = new URL(relSrc, window.location.href).href;
 
@@ -218,11 +222,15 @@
         sessionStorage.setItem('sg_audio_src', currentSrc || audio.currentSrc || '');
         sessionStorage.setItem('sg_audio_time', String(audio.currentTime || 0));
         sessionStorage.setItem('sg_audio_was_playing', String(!audio.paused));
+        if(currentGenre){
+          sessionStorage.setItem('sg_audio_genre', currentGenre);
+        }
         audio.pause(); // stop here, continue on reveal
       } else {
         sessionStorage.removeItem('sg_audio_src');
         sessionStorage.removeItem('sg_audio_time');
         sessionStorage.removeItem('sg_audio_was_playing');
+        sessionStorage.removeItem('sg_audio_genre');
       }
     }
 
@@ -241,6 +249,7 @@
       sessionStorage.removeItem('sg_audio_src');
       sessionStorage.removeItem('sg_audio_time');
       sessionStorage.removeItem('sg_audio_was_playing');
+      sessionStorage.removeItem('sg_audio_genre'); // 👈 clear genre too
       window.goTo('stage2.html');
     });
 
@@ -252,6 +261,8 @@
   });
 </script>
 
+
 </body>
 </html>
+
 
