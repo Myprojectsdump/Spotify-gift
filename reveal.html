@@ -57,7 +57,7 @@
 
   <script>
   document.addEventListener('DOMContentLoaded', function(){
-    // 🎉 Confetti behavior (kept same)
+    // 🎉 Confetti behavior
     window.ConfettiSystem.start({count:360, duration:4200});
     const replayBtn = document.getElementById('replay');
     replayBtn.addEventListener('click', ()=> window.ConfettiSystem.start({count:220, duration:3000}));
@@ -65,20 +65,27 @@
     const musicToggle = document.getElementById('musicToggle');
     const doneLink = document.getElementById('done');
 
-    // 🎧 Restore audio from sessionStorage
-    const savedSrc = sessionStorage.getItem('sg_audio_src');
+    // 🎧 Restore audio info from sessionStorage
+    const savedGenre = sessionStorage.getItem('sg_audio_genre') || 'surprise';
     const savedTime = parseFloat(sessionStorage.getItem('sg_audio_time') || '0');
     const wasPlaying = sessionStorage.getItem('sg_audio_was_playing') === 'true';
 
     let audio = null;
 
-    if(savedSrc){
-      audio = new Audio(savedSrc);
+    // Build src from genre (more robust on GitHub)
+    const relSrc = 'assets/audio/vibe_' + savedGenre + '.mp3';
+
+    // If we ever stored a full URL, we can keep it as an optional fallback (not required)
+    const savedSrc = sessionStorage.getItem('sg_audio_src');
+    const finalSrc = savedSrc || relSrc;
+
+    // Create audio if we have something
+    if(savedGenre || savedSrc){
+      audio = new Audio(finalSrc);
       audio.loop = true;
       audio.volume = 0.8;
 
       if(!isNaN(savedTime) && savedTime > 0){
-        // small try/catch in case browser doesn't like setting too early
         try { audio.currentTime = savedTime; } catch(e){}
       }
 
@@ -104,7 +111,6 @@
     if(musicToggle){
       musicToggle.addEventListener('click', ()=> {
         if(!audio){
-          // nothing was saved – optional: you could create a default track here
           alert('Music is not loaded from the previous step.');
           return;
         }
@@ -122,10 +128,13 @@
         sessionStorage.removeItem('sg_audio_src');
         sessionStorage.removeItem('sg_audio_time');
         sessionStorage.removeItem('sg_audio_was_playing');
+        sessionStorage.removeItem('sg_audio_genre'); // 👈 also clear genre
       });
     }
   });
 </script>
 
+
 </body>
 </html>
+
